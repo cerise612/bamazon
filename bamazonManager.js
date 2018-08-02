@@ -32,21 +32,20 @@ inquirer
   ])
 
   .then(function(res) {
-    var user = res;
-    for (var i = 0; i < user.length; i++) {
-      console.log(user);
-    }
-    switch (user) {
+    // for (var i = 0; i < res.length; i++) {
+      console.log("check " + res.doingWhat);
+    // }
+    switch (res.doingWhat) {
       // if View Products for Sale is selected complete run queryItems()
-      case 0:
+      case res.doingWhat === "View Products for Sale":
         queryItems();
         break;
       // if View Low Inventory is selected complete run lowQuantity()
-      case 1:
+      case res.doingWhat === "View Low Inventory":
         lowQuantity();
         break;
       // if Add to Inventory is selected complete run queryItems() then prompt user for more info
-      case 2:
+      case res.doingWhat === "Add to Inventory":
         queryItems();
         inquirer
           .prompt([
@@ -64,8 +63,8 @@ inquirer
           ])
           // update database with new item information
           .then(function(uR) {
-            connection.query(
-              "UPDATE products SET stock_quantity =  ?  WHERE item_id = ? ",
+            var query = 
+              "UPDATE products SET stock_quantity =  ?  WHERE item_id = ? "; connection.query(query,
               {
                 item_id: uR.productId,
                 stock_quantity: uR.quantity
@@ -74,8 +73,8 @@ inquirer
           });
         break;
         // if Add New Product is selected  prompt user for more info
-      default:
-        inquirer
+        case res.doingWhat === "Add New Product":
+          inquirer
           .prompt([
             {
               // item to be added
@@ -101,13 +100,14 @@ inquirer
           ])
           // update database with new item information
           .then(function(iR) {
-            var query = connection.query("INSERT INTO products SET ?", {
+            var query = "INSERT INTO products SET ?"; connection.query(query,{
               product_name: iR.name,
               department_name: iR.department,
               price: parseFloat(iR.price),
               stock_quantity: iR.quantity
             });
           });
+          break;
     }
   });
 

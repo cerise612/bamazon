@@ -1,5 +1,6 @@
 var mysql = require("mysql");
 var inquirer = require("inquirer");
+const cTable = require("console.table");
 
 var connection = mysql.createConnection({
   host: "localhost",
@@ -36,45 +37,57 @@ inquirer
     }
   ])
   .then(function(user) {
-    console.log(results);
+    // console.log(results);
     // selected item id from user query
-    var selectedProduct = user.productId;
+    var selectedProduct = user.productId - 1;
     // item quanity from user query
     var selectedQuantity = parseFloat(user.productQuantity);
     // available quantity based upon selected item id
-    var currentQuantity = [user.productId].stock_quantity; // .stock_quantity is undefined****************************************
+    var currentQuantity = results[selectedProduct].stock_quantity;
     // current sales total based upon selected item id
-    var currentSales = user.productId.product_sales;
+    var currentSales = results[selectedProduct].product_sales;
     // total price for transaction based upon selected item id
-    var selectedPrice = selectedQuantity * user.productId.price;
+    var selectedPrice = selectedQuantity * results[selectedProduct].price;
 
-    console.log("selected products " + currentQuantity);
+    console.log("check " + selectedPrice);
 
     // user selects in excess of available quantity
     if (selectedQuantity > currentQuantity) {
       console.log("Insufficient quantity!");
       connection.end();
-      console.log("check " + selectedQuantity);
-    } else if (
-      // user selects available quantity
-      selectedQuantity <= currentQuantity
-    ) {
+    } else if ( selectedQuantity <= currentQuantity) { // user selects available quantity
       console.log("Order placed!");
       // reduce the available quantity by the selected amount
-      var updatedQuantity = currentQuantity - selectedQuantity;
-      console.log(updatedQuantity);
+      var updatedQuantity = parseInt(currentQuantity) - parseInt(selectedQuantity);
+      console.log("working " + updatedQuantity);
       // add total transaction price to running total for product type
-      var updatedSales = currentSales + selectedPrice;
-      // update table in database
-      connection.query(
-        "UPDATE products SET stock_quantity =  ?  and SET product_sales = ? WHERE item_id = ? ",
-        [updatedQuantity, updatedSales, selectedProduct]
-      );
+      var updatedSales = parseInt(currentSales) + parseInt(selectedPrice);
+      console.log("update " + updatedSales);
+      var query = connection.query(
+          "UPDATE products SET ?, ? WHERE ? ",
+          [
+            {
+              stock_quantity: updatedQuantity
+            },{
+              product_sales: updatedSales
+            },{
+              item_id: user.productId
+            }
+          ],function(err, data){
+              if (err) {
+                return console.log("error ocurred", err);
+              }
+            console.log(data);
+            console.log(query.sql);
+          }
+        );
     }
   })
   .catch(function(err) {
     console.log(err);
   });
+
+ 
 
 // query all to display database of items
 function queryItems() {

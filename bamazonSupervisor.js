@@ -31,17 +31,16 @@ var connection = mysql.createConnection({
     }
 // determine user selection
   ]).then(function(res) {
-    var user = res;
-    for (var i = 0; i < user.length; i++) {
-      console.log(user);
-    }
-    switch (user) {
+    // for (var i = 0; i < res.length; i++) {
+      console.log("check " + res.doingWhat);
+    // }
+    switch (res.doingWhat) {
         // if View Product Sales by Department is selected complete run queryDepartments()
-      case 0:
+      case res.doingWhat === "View Product Sales by Department":
         queryDepartments();
         break;
         // if Create New Department is selected prompt user for more information
-        default:
+        case res.doingWhat ===  "Create New Department":
         inquirer
           .prompt([
             // new department information
@@ -57,11 +56,12 @@ var connection = mysql.createConnection({
             },
             // intert new department info into department table
           ]).then(function(iR) {
-            var query = connection.query("INSERT INTO departments SET ?", {
+            var query = "INSERT INTO departments SET ?"; var query = connection.query(query,{
               department_name: iR.name,
               over_head_costs: iR.costs,
             });
           });
+          break;
     }
   });
 
