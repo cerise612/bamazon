@@ -37,27 +37,38 @@ inquirer
   ])
   .then(function(user) {
     console.log(results);
+    // selected item id from user query
     var selectedProduct = user.productId;
+    // item quanity from user query
     var selectedQuantity = parseFloat(user.productQuantity);
+    // available quantity based upon selected item id
     var currentQuantity = [user.productId].stock_quantity; // .stock_quantity is undefined****************************************
+    // current sales total based upon selected item id
+    var currentSales = user.productId.product_sales;
+    // total price for transaction based upon selected item id
+    var selectedPrice = selectedQuantity * user.productId.price;
+
     console.log("selected products " + currentQuantity);
-    // user selects incorrect quantity
+
+    // user selects in excess of available quantity
     if (selectedQuantity > currentQuantity) {
       console.log("Insufficient quantity!");
       connection.end();
       console.log("check " + selectedQuantity);
     } else if (
-      // user selects correct quantity
+      // user selects available quantity
       selectedQuantity <= currentQuantity
     ) {
       console.log("Order placed!");
       // reduce the available quantity by the selected amount
       var updatedQuantity = currentQuantity - selectedQuantity;
       console.log(updatedQuantity);
+      // add total transaction price to running total for product type
+      var updatedSales = currentSales + selectedPrice;
       // update table in database
       connection.query(
-        "UPDATE products SET stock_quantity =  ?  WHERE item_id = ? ",
-        [updatedQuantity, selectedProduct]
+        "UPDATE products SET stock_quantity =  ?  and SET product_sales = ? WHERE item_id = ? ",
+        [updatedQuantity, updatedSales, selectedProduct]
       );
     }
   })
