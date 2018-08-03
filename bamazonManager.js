@@ -33,17 +33,18 @@ inquirer
 
   .then(function(res) {
     // for (var i = 0; i < res.length; i++) {
-      console.log("check " + res.doingWhat);
+      
     // }
     switch (res.doingWhat) {
       // if View Products for Sale is selected complete run queryItems()
       case res.doingWhat === "View Products for Sale":
         queryItems();
-        break;
+        console.log("check " + res.doingWhat);
+      break;
       // if View Low Inventory is selected complete run lowQuantity()
       case res.doingWhat === "View Low Inventory":
         lowQuantity();
-        break;
+      break;
       // if Add to Inventory is selected complete run queryItems() then prompt user for more info
       case res.doingWhat === "Add to Inventory":
         queryItems();
@@ -100,16 +101,30 @@ inquirer
           ])
           // update database with new item information
           .then(function(iR) {
-            var query = "INSERT INTO products SET ?"; connection.query(query,{
-              product_name: iR.name,
-              department_name: iR.department,
-              price: parseFloat(iR.price),
-              stock_quantity: iR.quantity
-            });
+            var query = connection.query(
+              "INSERT INTO products SET ?",
+              [
+                {
+                  product_name: iR.name,
+                },{
+                  department_name: iR.department,
+                },{
+                  price: parseFloat(iR.price),
+                },{
+                  stock_quantity: parseFloat(iR.quantity),
+                }
+              ],function(err, data){
+                  if (err) {
+                    return console.log("error ocurred", err);
+                  }
+                console.log(data);
+                console.log(query.sql);
+              }
+            );
           });
-          break;
-    }
+    };
   });
+   
 
 // query all to display database of items
 function queryItems() {
@@ -158,5 +173,4 @@ function lowQuantity() {
         }
       }
     });
-  }
-  
+  };
